@@ -1,0 +1,18 @@
+// PESTOCKS · Cloudflare Worker configuration (placeholder — fill in your own IDs)
+{
+  "name": "pestocks",
+  "main": "src/index.js",
+  "compatibility_date": "2026-01-01",
+  "workers_dev": true,
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pestocks-db",
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ]
+}
