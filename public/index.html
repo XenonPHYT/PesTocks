@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="PESTOCKS — Philippine trading simulation game">
+  <title>PESTOCKS · Trading Simulation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ============ AUTH GATE ============ -->
+  <main id="auth-screen" class="auth-screen">
+    <section class="auth-card">
+      <header class="auth-brand">
+        <h1 class="logo">PE<span>STOCKS</span></h1>
+        <p class="tagline">Philippine Trading Simulation</p>
+      </header>
+
+      <nav class="auth-tabs" role="tablist" aria-label="Authentication">
+        <button class="auth-tab active" id="tab-login" role="tab" aria-selected="true">Log In</button>
+        <button class="auth-tab" id="tab-signup" role="tab" aria-selected="false">Sign Up</button>
+      </nav>
+
+      <form id="login-form" class="auth-form" autocomplete="off">
+        <label>Username
+          <input type="text" id="login-username" maxlength="24" required autocomplete="username">
+        </label>
+        <label>Password
+          <input type="password" id="login-password" minlength="8" required autocomplete="current-password">
+        </label>
+        <button type="submit" class="btn btn-primary" id="login-submit">Enter Market</button>
+        <p class="auth-msg" id="login-msg" role="alert"></p>
+        <button type="button" class="btn btn-link" id="open-recovery">Forgot password? Talk to the Security Assistant</button>
+      </form>
+
+      <form id="signup-form" class="auth-form hidden" autocomplete="off">
+        <label>Username
+          <input type="text" id="signup-username" maxlength="24" required autocomplete="username">
+        </label>
+        <label>Password (min. 8 chars)
+          <input type="password" id="signup-password" minlength="8" required autocomplete="new-password">
+        </label>
+        <label>Secret Question
+          <select id="signup-question" required>
+            <option value="" disabled selected>Choose a security question…</option>
+            <option>What was the name of your first pet?</option>
+            <option>In what barangay were you born?</option>
+            <option>What is your mother's maiden name?</option>
+            <option>What was your childhood nickname?</option>
+            <option>What street did you grow up on?</option>
+          </select>
+        </label>
+        <label>Secret Answer
+          <input type="text" id="signup-answer" maxlength="64" required>
+        </label>
+        <label>Backup 6-PIN (digits only)
+          <input type="password" id="signup-pin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required placeholder="••••••">
+        </label>
+        <button type="submit" class="btn btn-primary" id="signup-submit">Create Account</button>
+        <p class="auth-msg" id="signup-msg" role="alert"></p>
+      </form>
+    </section>
+
+    <!-- ============ SECURITY ASSISTANT (Recovery Chat) ============ -->
+    <section class="chat-shell hidden" id="recovery-chat" aria-label="Security Assistant">
+      <header class="chat-header">
+        <div class="chat-avatar" aria-hidden="true">🛡️</div>
+        <div class="chat-id">
+          <strong>Security Assistant AI</strong>
+          <span id="chat-status" class="chat-status">Online · Account Recovery</span>
+        </div>
+        <button type="button" class="chat-close" id="close-recovery" aria-label="Close recovery chat">✕</button>
+      </header>
+      <div class="chat-log" id="chat-log" aria-live="polite"></div>
+      <form class="chat-input-row" id="chat-form" autocomplete="off">
+        <input type="text" id="chat-input" placeholder="Type your reply…" maxlength="128" autocomplete="off">
+        <button type="submit" class="btn btn-primary btn-chat" id="chat-send">Send</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- ============ GAME APP ============ -->
+  <div id="app-screen" class="app-screen hidden">
+
+    <header class="topbar">
+      <div class="topbar-brand">PE<span>STOCKS</span></div>
+      <div class="ticker-tape" id="ticker-tape" aria-label="Market ticker tape"></div>
+      <div class="topbar-user">
+        <span class="chip chip-level" id="top-level">Lv 1</span>
+        <span class="chip chip-cash" id="top-cash">₱0.00</span>
+        <button class="btn btn-ghost" id="btn-logout">Log out</button>
+      </div>
+    </header>
+
+    <nav class="main-nav" aria-label="Main navigation">
+      <button class="nav-btn active" data-view="dashboard">📈 Market</button>
+      <button class="nav-btn" data-view="trade">💹 Trade</button>
+      <button class="nav-btn" data-view="profile">🏆 Profile</button>
+    </nav>
+
+    <!-- ---- MARKET VIEW ---- -->
+    <section id="view-dashboard" class="view active">
+      <div class="dash-grid">
+        <article class="panel panel-chart">
+          <header class="panel-head">
+            <h2 id="chart-title">Select an asset</h2>
+            <span class="chip" id="chart-price">—</span>
+          </header>
+          <div class="chart-wrap"><svg id="price-chart" viewBox="0 0 600 220" preserveAspectRatio="none" role="img" aria-label="Price chart"></svg></div>
+        </article>
+
+        <article class="panel">
+          <header class="panel-head"><h2>Stocks <small>· dividend paying</small></h2></header>
+          <div class="asset-list" id="list-stocks"></div>
+        </article>
+
+        <article class="panel">
+          <header class="panel-head"><h2>Forex <small>· shorts supported</small></h2></header>
+          <div class="asset-list" id="list-forex"></div>
+        </article>
+
+        <article class="panel">
+          <header class="panel-head"><h2>Real Estate <small>· per sqm · 2% fee</small></h2></header>
+          <div class="asset-list" id="list-realestate"></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ---- TRADE VIEW ---- -->
+    <section id="view-trade" class="view">
+      <div class="trade-grid">
+        <article class="panel order-panel">
+          <header class="panel-head"><h2>Order Entry</h2></header>
+          <form id="order-form" autocomplete="off">
+            <label>Asset
+              <select id="order-ticker" required></select>
+            </label>
+            <div class="field-row">
+              <label>Order Type
+                <select id="order-type">
+                  <option value="MARKET">Market</option>
+                  <option value="LIMIT">Limit</option>
+                  <option value="STOP_LOSS">Stop-Loss</option>
+                </select>
+              </label>
+              <label id="limit-price-wrap" class="hidden">Trigger Price (₱)
+                <input type="number" id="order-trigger" min="0.01" step="0.01" inputmode="decimal">
+              </label>
+            </div>
+            <div class="side-toggle" role="group" aria-label="Order side">
+              <button type="button" class="side-btn side-buy active" data-side="BUY">Buy / Long</button>
+              <button type="button" class="side-btn side-sell" data-side="SELL">Sell / Short</button>
+            </div>
+            <label>Amount (₱)
+              <input type="number" id="order-amount" min="100" step="100" inputmode="decimal" required>
+            </label>
+            <label>Leverage <span class="lev-out" id="lev-out">1×</span>
+              <input type="range" id="order-leverage" min="1" max="20" step="1" value="1" class="slider">
+            </label>
+            <div class="margin-box">
+              <div><span>Est. Margin Required</span><strong id="margin-out">₱0.00</strong></div>
+              <div><span>Est. Fee</span><strong id="fee-out">₱0.00</strong></div>
+              <div><span>Est. Qty</span><strong id="qty-out">0</strong></div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-execute" id="order-submit">Execute Order</button>
+            <p class="auth-msg" id="order-msg" role="alert"></p>
+          </form>
+        </article>
+
+        <article class="panel">
+          <header class="panel-head"><h2>Open Positions</h2></header>
+          <div class="table-wrap">
+            <table class="data-table" id="positions-table">
+              <thead><tr><th>Asset</th><th>Dir</th><th>Qty</th><th>Entry</th><th>P&amp;L</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel">
+          <header class="panel-head"><h2>Pending Orders</h2></header>
+          <div class="table-wrap">
+            <table class="data-table" id="pending-table">
+              <thead><tr><th>Asset</th><th>Type</th><th>Side</th><th>Trigger</th><th>Qty</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ---- PROFILE VIEW ---- -->
+    <section id="view-profile" class="view">
+      <div class="profile-grid">
+        <article class="panel profile-card">
+          <header class="panel-head"><h2>Progression</h2></header>
+          <div class="level-ring">
+            <svg viewBox="0 0 120 120" class="ring-svg" aria-hidden="true">
+              <circle cx="60" cy="60" r="52" class="ring-bg"></circle>
+              <circle cx="60" cy="60" r="52" class="ring-fg" id="exp-ring"></circle>
+            </svg>
+            <div class="level-num"><strong id="profile-level">1</strong><span>LEVEL</span></div>
+          </div>
+          <p class="exp-line" id="exp-line">0 / 0 EXP</p>
+          <div class="stat-row">
+            <div class="stat"><strong id="stat-wins">0</strong><span>Wins</span></div>
+            <div class="stat"><strong id="stat-losses">0</strong><span>Losses</span></div>
+            <div class="stat"><strong id="stat-pnl">₱0</strong><span>Realized P&amp;L</span></div>
+            <div class="stat"><strong id="stat-hold">0h</strong><span>Hold Time</span></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <header class="panel-head"><h2>Per-Asset Stats</h2></header>
+          <div class="table-wrap">
+            <table class="data-table" id="asset-stats-table">
+              <thead><tr><th>Asset</th><th>Trades</th><th>P&amp;L</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel">
+          <header class="panel-head"><h2>Public Top 5 Trades</h2></header>
+          <ol class="top-trades" id="top-trades"></ol>
+        </article>
+
+        <article class="panel panel-wide">
+          <header class="panel-head"><h2>My Trade Log <small>· private</small></h2></header>
+          <div class="table-wrap">
+            <table class="data-table" id="history-table">
+              <thead><tr><th>Time</th><th>Asset</th><th>Side</th><th>Qty</th><th>Price</th><th>P&amp;L</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast hidden" role="status"></div>
+  <script src="app.js" defer></script>
+</body>
+</html>
